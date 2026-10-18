@@ -23,8 +23,8 @@ CREATE TABLE public.doctor (
 );
 
 -- 3. Appointment Table
--- Tracks scheduled visits linking patients and doctors with time and status constraints.
--- Note: Checking that a doctor is active (is_active = TRUE) when scheduling requires trigger/transaction logic.
+-- Records scheduled visits linking patients and doctors with time and status.
+-- Note: Verifying that the doctor is active (is_active = TRUE) at scheduling requires trigger or transaction logic.
 CREATE TABLE public.appointment (
     appointment_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     patient_id INTEGER NOT NULL REFERENCES public.patient(patient_id),
@@ -33,19 +33,22 @@ CREATE TABLE public.appointment (
     created_at TIMESTAMP NOT NULL,
     status VARCHAR(20) NOT NULL,
     
-    -- Rule 4: One appointment per doctor at a given date and time
-    CONSTRAINT uq_appointment_doctor_time UNIQUE (staff_id, appointment_time),
-    
-    -- Rule 5: Patient appointments at different times
-    CONSTRAINT uq_appointment_patient_time UNIQUE (patient_id, appointment_time),
-    
     -- Rule 6: Appointment time must be later than creation time
     CONSTRAINT chk_appointment_time CHECK (appointment_time > created_at)
 );
 
+-- Rules 4 & 5: Prevent conflicting appointments for active/scheduled visits while keeping cancelled history
+CREATE UNIQUE INDEX uq_appointment_doctor_time 
+ON public.appointment (staff_id, appointment_time) 
+WHERE status <> 'cancelled';
+
+CREATE UNIQUE INDEX uq_appointment_patient_time 
+ON public.appointment (patient_id, appointment_time) 
+WHERE status <> 'cancelled';
+
 -- 4. Consultation Table
 -- Stores diagnosis and notes from completed appointments.
--- Note: Enforcing that the linked appointment status is explicitly 'completed' requires trigger/transaction logic.
+-- Note: Ensuring that the linked appointment status is explicitly 'completed' before recording a consultation requires trigger or transaction logic.
 CREATE TABLE public.consultation (
     consultation_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     appointment_id INTEGER NOT NULL UNIQUE REFERENCES public.appointment(appointment_id),
