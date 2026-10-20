@@ -1,30 +1,26 @@
-# Portfolio 1 Database Design and Modelling
+# Asogwa Brendan 30161991 - Portfolio 1: Clinic Management System
 
-## Case Study
-A clinic management system stores patient details, medical staff records, appointment schedules, and consultation history. Receptionists register patients and schedule visits, while doctors conduct consultations and record medical notes. The database maintains accurate tracking of patient interactions and clinical outcomes.
+## Design and implementation files
 
-## Users
-- **Patients:** Attend appointments and receive care.
-- **Receptionists:** Register patients and schedule visits.
-- **Doctors:** Manage diagnoses, consultation notes, and prescriptions.
+| File | Contents |
+| --- | --- |
+| Asogwa_Brendan_30161991_P1_Design.md | Entities, attributes, keys and relationships for clinic |
+| Asogwa_Brendan_30161991_P1_ERDiagram.md | Five tables and relationships: patient, doctor, appointment, consultation, prescription |
+| Asogwa_Brendan_30161991_P1_Schema.sql | Table definitions, keys and constraints |
+| Asogwa_Brendan_30161991_P1_SampleData.sql | Fictional data: 3 patients, 2 doctors, 3 appointments, 1 consultation, 1 prescription |
+| Asogwa_Brendan_30161991_P1_ConstraintTests.sql | Invalid inserts and final count query |
+| Screenshots PNGs | Evidence_count_before, Evidence_count_after_valid, Evidence_constraint_tests |
 
-## Main Operations
-- Register a patient.
-- Add a doctor profile.
-- Schedule an appointment.
-- Record a consultation.
-- Issue a prescription.
-- View a patient's medical history and doctor availability.
+## Implementation
 
-## Business Rules
-1. Each patient has a unique patient ID and phone number.
-2. Each doctor has a unique staff ID and belongs to one department.
-3. Each appointment refers to one existing patient and one active doctor.
-4. A doctor can have at most one appointment at a given date and time.
-5. A patient can have multiple appointments, provided they are scheduled at different times.
-6. The appointment time must be later than the creation time.
-7. A consultation record is linked to exactly one completed appointment.
-8. A prescription must reference a valid consultation and include specific medication details.
+The database runs on PostgreSQL in GitHub Codespaces. Its name is clinic_portfolio. It contains patient, doctor, appointment, consultation and prescription.
 
-## Scope
-One clinic branch, fictional patient records, and outpatient appointments. Inpatient stays, emergency services, insurance processing, billing, and pharmacy inventory are outside this example.
+Patient phones and doctor emails are unique. NOT NULL ensures full_name. Foreign keys link appointment to patient/doctor, consultation to appointment, prescription to consultation. Check constraint chk_appointment_time rejects invalid times. Unique index uq_appointment_doctor_time on (staff_id, appointment_time) prevents double-booking a doctor.
+
+## Test results
+
+Five invalid inserts were rejected: missing full_name, repeated phone 555-0100, nonexistent patient link 99999, invalid appointment time, duplicate doctor booking 1 at 2026-11-01 10:00:00.
+
+Final counts are 3 patients, 2 doctors, 3 appointments, 1 consultation and 1 prescription. Failed inserts added 0 rows. Verified by count query.
+
+Workflow logic needs transaction testing in Portfolio 2 and 3.
